@@ -12,7 +12,7 @@ A command line application that allows a user to generate a roster for an engine
 
 ![Demo2](/demogifs/team_template_demo2.gif "Generate a team roster.")
 
-![Sample Team](output/sampleteam.pdf)
+[Sample Team](output/sampleteam.pdf)
 
 ## Tech and Features Used
 
