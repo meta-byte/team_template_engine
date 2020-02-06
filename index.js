@@ -5,8 +5,14 @@ const Manager = require("./lib/Manager");
 const axios = require("axios")
 const inquirer = require("inquirer")
 const Questions = require("./lib/questions")
+const fs = require("fs")
+const util = require("util");
+const generateHTML = require("./lib/generateHTML.js")
+
+const writeFileAsync = util.promisify(fs.writeFile)
 
 var team = []
+var cards = []
 
 
 // main function that determines which type of team member should be added
@@ -46,6 +52,7 @@ function addEmployee() {
         .then(function (res) {
             if (res.addEmployee != true) {
                 console.log("Your team roster has been created!")
+                writeHTML()
             }
             else (
                 addMember()
@@ -62,7 +69,6 @@ function makeManager() {
             let manager = new Manager(res.name, res.id, res.email, res.officeNumber)
             team.push(manager)
             console.log(res.name + " has been added as a Manager!")
-            // addEmployee()
             addMember()
         })
 }
@@ -108,3 +114,17 @@ function getGithub(username) {
 }
 
 makeManager()
+
+function writeHTML() {
+    let cardsRaw = []
+    for (i = 0; i < team.length; i++) {
+        card = team[i].getCard()
+        cardsRaw.push(card)
+        cardsClean = cardsRaw.join("")
+    }
+    html = generateHTML(cardsClean);
+    return writeFileAsync("team.html", html)
+
+
+
+}
