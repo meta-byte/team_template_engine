@@ -12,7 +12,6 @@ const generateHTML = require("./lib/generateHTML.js")
 const writeFileAsync = util.promisify(fs.writeFile)
 
 var team = []
-var cards = []
 
 
 // main function that determines which type of team member should be added
@@ -51,8 +50,17 @@ function addEmployee() {
         })
         .then(function (res) {
             if (res.addEmployee != true) {
-                console.log("Your team roster has been created!")
-                writeHTML()
+                inquirer
+                    .prompt({
+                        type: "input",
+                        message: "Please enter a team name.",
+                        name: "teamname"
+                    })
+                    .then(function (res) {
+                        console.log("Roster for " + res.teamname + " has been created!")
+                        writeHTML(res.teamname)
+
+                    })
             }
             else (
                 addMember()
@@ -60,7 +68,7 @@ function addEmployee() {
         })
 }
 
-//prompts manager questions and creates a manager
+//starts program and prompts manager questions
 function makeManager() {
     console.log("Please create a manager for this team.")
     inquirer
@@ -106,25 +114,20 @@ function makeIntern() {
         })
 }
 
-function getGithub(username) {
-    const queryUrl = `https://api.github.com/users/${username}`
-    axios.get(queryUrl).then(function (res) {
-        githubUrl = res.data.html_url
-    })
-}
-
-makeManager()
-
-function writeHTML() {
+//creates an array of strings with interpolated class data then joins them and calls generate html
+function writeHTML(name) {
     let cardsRaw = []
     for (i = 0; i < team.length; i++) {
         card = team[i].getCard()
         cardsRaw.push(card)
         cardsClean = cardsRaw.join("")
     }
-    html = generateHTML(cardsClean);
-    return writeFileAsync("team.html", html)
+    html = generateHTML(cardsClean, name);
+    return writeFileAsync("output/team.html", html)
 
 
 
 }
+
+
+makeManager()
