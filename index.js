@@ -2,19 +2,20 @@ const Employee = require("./lib/Employee.js");
 const Engineer = require("./lib/Engineer.js");
 const Intern = require("./lib/Intern");
 const Manager = require("./lib/Manager");
-const Inquirer = require("Inquirer")
+const axios = require("axios")
+const inquirer = require("inquirer")
 const Questions = require("./lib/questions")
-
 
 var team = []
 
-function run() {
-    Inquirer.prompt({
+
+// main function that determines which type of team member should be added
+function addMember() {
+    inquirer.prompt({
         type: "list",
         message: "Who would you like to add?",
         name: "typeEmployee",
         choices: [
-            "Manager",
             "Engineer",
             "Intern"
         ]
@@ -22,9 +23,6 @@ function run() {
         .then(function (type) {
             console.log(type.typeEmployee)
             switch (type.typeEmployee) {
-                case "Manager":
-                    makeManager()
-                    break;
                 case "Engineer":
                     makeEngineer()
                     break;
@@ -35,15 +33,14 @@ function run() {
                     break;
             }
         })
-
 }
 
-
+//asks for confirmation to add another employee. Calls back to run function
 function addEmployee() {
-    Inquirer
+    inquirer
         .prompt({
             type: "confirm",
-            message: "Would you like to add someone else?",
+            message: "Would you like to add someone else to this team?",
             name: "addEmployee"
         })
         .then(function (res) {
@@ -51,40 +48,63 @@ function addEmployee() {
                 console.log("Your team roster has been created!")
             }
             else (
-                run()
+                addMember()
             )
         })
 }
 
+//prompts manager questions and creates a manager
 function makeManager() {
-    Inquirer
+    console.log("Please create a manager for this team.")
+    inquirer
         .prompt(Questions.managerQuestions)
         .then(function (res) {
             let manager = new Manager(res.name, res.id, res.email, res.officeNumber)
+            team.push(manager)
             console.log(res.name + " has been added as a Manager!")
-            addEmployee()
+            // addEmployee()
+            addMember()
         })
 }
 
+//prompts engineer questions and creates an engineer
 function makeEngineer() {
-    Inquirer
+    inquirer
         .prompt(Questions.engineerQuestions)
         .then(function (res) {
-            let engineer = new Engineer(res.name, res.id, res.email, res.github)
+            const name = res.name
+            const id = res.id
+            const email = res.email
+            const github = res.github
+            const queryUrl = `https://api.github.com/users/${res.github}`
+            axios.get(queryUrl).then(function (res) {
+                var githubUrl = res.data.html_url
+                let engineer = new Engineer(name, id, email, github, githubUrl)
+                team.push(engineer)
+            })
             console.log(res.name + " has been added as an Engineer!")
             addEmployee()
         })
 }
 
+//prompts intern questions and creates an intern
 function makeIntern() {
-    Inquirer
+    inquirer
         .prompt(Questions.internQuestions)
         .then(function (res) {
             let intern = new Intern(res.name, res.id, res.email, res.school)
+            team.push(intern)
             console.log(res.name + "has been added as an Intern!")
             addEmployee()
 
         })
 }
 
-run()
+function getGithub(username) {
+    const queryUrl = `https://api.github.com/users/${username}`
+    axios.get(queryUrl).then(function (res) {
+        githubUrl = res.data.html_url
+    })
+}
+
+makeManager()
